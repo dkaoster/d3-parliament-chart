@@ -1,0 +1,27 @@
+{
+  "name": "d3-parliament-chart",
+  "version": "0.0.0",
+  "description": "semi-circle parliament charts simplified",
+  "main": "dist/d3-parliament-chart.cjs.js",
+  "jsnext:main": "dist/d3-parliament-chart.es.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dkaoster/d3-parliament-chart.git"
+  },
+  "author": "Daniel Kao",
+  "license": "MIT",
+  "keywords": [
+    "d3",
+    "parliament",
+    "legislature",
+    "congress",
+    "chart"
+  ],
+  "bugs": {
+    "url": "https://github.com/dkaoster/d3-parliament-chart/issues"
+  },
+  "homepage": "https://github.com/dkaoster/d3-parliament-chart#readme"
+}
