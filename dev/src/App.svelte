@@ -1,28 +1,37 @@
 <script>
+  import * as d3 from 'd3';
   import * as parliamentChart from '../../build/d3-parliament-chart.es';
+
+  let width, svg;
+
+  const data = new Array(100).fill({});
+
+  $: svgSelection = svg && d3.select(svg);
+  $: svgSelection && width && svgSelection
+    .call(parliamentChart.parliamentChart(data).debug(true))
+    .attr('fill', 'black');
 </script>
 
-<main>
-  <h1>Hello Test!</h1>
-  <p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
-</main>
-
 <style>
-  main {
-    text-align: center;
-    padding: 1em;
-    max-width: 240px;
-    margin: 0 auto;
+  .wrapper {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  h1 {
-    color: #ff3e00;
-    text-transform: uppercase;
-    font-size: 4em;
-    font-weight: 100;
+
+  .chart {
+    width: 100%;
+    max-width: 800px;
   }
-  @media (min-width: 640px) {
-    main {
-      max-width: none;
-    }
+
+  svg {
+    width: 100%;
   }
 </style>
+
+<div class="wrapper">
+  <div class="chart" bind:clientWidth={width}>
+    <svg viewBox="0 0 {width} {width / 2}" bind:this={svg} />
+  </div>
+</div>

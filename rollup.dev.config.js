@@ -5,6 +5,9 @@ import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
 import css from 'rollup-plugin-css-only';
 
+const onwarn = (warning, cb) => (warning.code === 'CIRCULAR_DEPENDENCY'
+  && (/d3/.test(warning.message))) || cb(warning);
+
 function serve() {
   let server;
 
@@ -77,5 +80,6 @@ export default [
     watch: {
       clearScreen: false,
     },
+    onwarn,
   },
 ];

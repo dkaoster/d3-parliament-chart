@@ -1,4 +1,5 @@
 import getParliamentPoints from './chart-helpers';
+import debugGuides from './debug';
 
 /**
  *  ___ ____    ___          _ _                    _       ___ _             _
@@ -39,14 +40,25 @@ export default (data = [], width = 0) => {
     // Get the processed data
     const processedData = parliamentChart.data();
 
-    // TODO append debug lines
-    if (debug) {
-      selection.append('g')
-        .attr('class', 'debug');
-    }
+    // Append debug lines
+    if (debug) debugGuides(selection, graphicWidth, options);
+
+    const circles = selection
+      .append('g')
+      .attr('class', 'parliament-chart')
+      .selectAll('circle')
+      .data(processedData);
+
+    // Edit
+    circles.attr('cx', (d) => d.x)
+      .attr('cy', (d) => d.y)
+      .attr('r', options.seatRadius);
+
+    // Exit
+    circles.exit().remove();
 
     // Add the circles
-    return selection.data(processedData)
+    return circles.enter()
       .insert('circle')
       .attr('cx', (d) => d.x)
       .attr('cy', (d) => d.y)
@@ -98,7 +110,7 @@ export default (data = [], width = 0) => {
     }
 
     // If width is not set, don't calculate this instance
-    if (width <= 0 || rawData.length <= 0) return rawData;
+    if (graphicWidth <= 0 || rawData.length <= 0) return rawData;
 
     // Check if we have already run this instance
     if (rawData.every((r) => r.x && r.y)) return rawData;

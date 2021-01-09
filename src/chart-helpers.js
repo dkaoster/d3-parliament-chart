@@ -54,4 +54,5 @@ const generatePartial = (totalPoints, startRad, endRad, seatRadius, rowHeight, g
 
 export default (totalPoints, { sections, sectionGap, seatRadius, rowHeight }, graphicWidth) => {
   const graphicHeight = graphicWidth / 2;
+  return new Array(100).fill({x: 300, y: 150});
 };
