@@ -1,76 +1,145 @@
-const generatePartial = (
-  totalPoints, startRad, endRad, angleOffset, seatRadius, graphRadius, rowHeight, graphicHeight
-) => {
-  // Final Array
-  let points = [];
+import getParliamentPoints from './chart-helpers';
+import debugGuides from './debug';
 
-  // Which Row are we currently drawing
-  let currentRow = 0;
+/**
+ *  ___ ____    ___          _ _                    _       ___ _             _
+ * |   \__ /   | _ \__ _ _ _| (_)__ _ _ __  ___ _ _| |_    / __| |_  __ _ _ _| |_
+ * | |) |_ \   |  _/ _` | '_| | / _` | '  \/ -_) ' \  _|  | (__| ' \/ _` | '_|  _|
+ * |___/___/   |_| \__,_|_| |_|_\__,_|_|_|_\___|_||_\__|   \___|_||_\__,_|_|  \__|
+ *
+ * A d3 plugin for making semi-circle parliament charts.
+ */
 
-  // Create all the points
-  while (points.length < totalPoints) {
+export default (data = [], width = 0) => {
+  // Dimensions of the graphic
+  let graphicWidth = parseFloat(width);
 
-    // Find the minimum size step given the radius
-    const currRadStep = Math.atan(
-      2 * (seatRadius + 1) / (graphRadius - (rowHeight * currentRow))
-    );
+  // clean out any x and y values provided in data objects.
+  let rawData = data.map(({ x, y, ...restProps }) => restProps);
 
-    // Find how many seats are in this row
-    const rowSeats = Math.min(
-      Math.floor((endRad - startRad) / currRadStep),
-      totalPoints - points.length - 1
-    );
+  // visual options
+  const options = {
+    sections: 4,         // Number of sections to divide the half circle into
+    sectionGap: 60,      // The gap of the aisle between sections
+    seatRadius: 12,      // The radius of each seat
+    rowHeight: 42,       // The height of each row
+  };
 
-    // Get adjusted step size
-    const roundedRadStep = (endRad - startRad) / rowSeats;
+  // Whether we should draw the debug lines or not
+  let debug = false;
 
-    // Add all the seats in this row
-    for (let currSeat = 0; currSeat <= rowSeats; currSeat++) {
-      const currentAngle = currSeat * roundedRadStep + startRad;
-      points = points.concat([{
-        cx: Math.cos(currentAngle)
-          * (graphRadius - (rowHeight * currentRow))
-          + graphicHeight,
-        cy: Math.sin(currentAngle)
-          * (graphRadius - (rowHeight * currentRow))
-          + seatRadius,
-        angle: currentAngle + angleOffset
-      }]);
+  // //////////////////////////////////////////////////////////////////////////
+  // Selection call
+  //
+  // This function gets called on instances such as:
+  //    d3.select('g').call(parliamentChart())
+  const parliamentChart = (selection) => {
+    // Sets the graphicWidth based on our selected container
+    graphicWidth = selection.node().getBoundingClientRect().width;
+
+    // Get the processed data (filter for entries that have x and y locations)
+    const processedData = parliamentChart.data().filter((r) => r.x && r.y);
+
+    // Remove existing chart
+    selection.select('g.parliament-chart').remove();
+
+    // Add new chart
+    const innerSelection = selection
+      .append('g')
+      .attr('class', 'parliament-chart');
+
+    // First remove any existing debug lines
+    innerSelection.select('g.debug').remove();
+
+    // Append debug lines
+    if (debug) debugGuides(innerSelection, graphicWidth, options, processedData.length);
+
+    return innerSelection
+      .selectAll('circle')
+      .data(processedData)
+      .enter()
+      .insert('circle')
+      .attr('cx', (d) => d.x)
+      .attr('cy', (d) => d.y)
+      .attr('r', options.seatRadius)
+      .attr('fill', (d) => d.color || '#AAA');
+  };
+
+  // //////////////////////////////////////////////////////////////////////////
+  // Getters and Setters
+
+  // Sets the width and the height of the graphic
+  parliamentChart.width = (w) => {
+    // eslint-disable-next-line no-restricted-globals
+    if (!isNaN(w)) {
+      // parse the width
+      graphicWidth = parseFloat(w);
     }
-    currentRow++;
-  }
-  return points;
+    return parliamentChart;
+  };
+
+  // Create getters and setters for sections, sectionGap, seatRadius, and rowHeight
+  Object.keys(options)
+    .forEach((attr) => {
+      parliamentChart[attr] = (s) => {
+        // eslint-disable-next-line no-restricted-globals
+        if (!isNaN(s)) {
+          options[attr] = parseInt(s, 10);
+          return parliamentChart;
+        }
+        return options[attr];
+      };
+    });
+
+  // enable / disable debug mode
+  parliamentChart.debug = (b) => {
+    debug = !!b;
+    return parliamentChart;
+  };
+
+  // //////////////////////////////////////////////////////////////////////////
+  // Data Processing
+  //
+  // Gets the data processed data with x and y coordinates or sets
+  // the raw data.
+  parliamentChart.data = (d) => {
+    // If an argument with new data is provided
+    if (d) {
+      // clean out any x and y values provided in data objects.
+      rawData = d.map(({ x, y, ...restProps }) => restProps);
+      return parliamentChart;
+    }
+
+    // If width is not set, don't calculate this instance
+    if (graphicWidth <= 0 || rawData.length <= 0) return rawData;
+
+    // Check if we have already run this instance
+    if (rawData.every((r) => r.x && r.y)) return rawData;
+
+    // The number of points we need to fit
+    const totalPoints = rawData.length;
+
+    // The locations of all the points
+    const locations = getParliamentPoints(totalPoints, options, graphicWidth);
+
+    // Add locations to the rawData object
+    locations.forEach((coords, i) => rawData[i] = ({ ...rawData[i], ...coords }));
+
+    // return the data
+    return rawData;
+  };
+
+  // Instead of passing in an array of every single point, we pass in an array of objects
+  // that each have a key `seats` that specifies the number of seats. This function can only
+  // set, not get.
+  parliamentChart.aggregatedData = (d) => {
+    rawData = d.reduce((acc, val) => {
+      const { seats = 0, x, y, ...restProps } = val;
+      return [...acc, ...Array(seats).fill(restProps)];
+    }, []);
+
+    return parliamentChart;
+  };
+
+  return parliamentChart;
 };
-
-// Space out the points
-const offsetPoints = (points, section, numSections) => {
-  const angle = (Math.PI / (numSections * 2)) + section * Math.PI / numSections;
-  const xOffset = Math.cos(angle) * 35;
-  const yOffset = Math.sin(angle) * 35;
-  return points.map(p => ({ ...p, cx: p.cx + xOffset, cy: p.cy + yOffset }))
-};
-
-const generatePoints = (
-  totalPoints, numSections, ...restProps
-) => {
-  let points = [];
-
-  // Split the points into sections so we have some more visual distinction
-  for (let i = 0; i < numSections; i++) {
-    points = points.concat(offsetPoints(
-      generatePartial(
-        totalPoints / numSections,
-        i * Math.PI / numSections,
-        (i + 1) * Math.PI / numSections,
-        i * 0.000001,
-        ...restProps
-      ),
-      i,
-      numSections
-    ))
-  }
-
-  return points.sort((a, b) => b.angle - a.angle);
-};
-
-export default generatePoints;

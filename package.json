@@ -1,11 +1,21 @@
 {
   "name": "d3-parliament-chart",
   "version": "0.0.0",
-  "description": "semi-circle parliament charts simplified",
-  "main": "dist/d3-parliament-chart.cjs.js",
-  "jsnext:main": "dist/d3-parliament-chart.es.js",
+  "description": "parliament / congress / legislature charts simplified",
+  "main": "build/d3-parliament-chart.js",
+  "files": [
+    "build",
+    "README.md"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "rollup -c rollup.dev.config.js -w",
+    "clean": "rimraf build",
+    "lint": "eslint .",
+    "test": "jest",
+    "build": "npm run clean && npm run build:umd",
+    "build:umd": "rollup -c -o build/d3-parliament-chart.js -f umd -n d3",
+    "prepublishOnly": "npm run build && uglifyjs build/d3-parliament-chart.js -c -m -o build/d3-parliament-chart.min.js",
+    "postpublish": "zip -j build/d3-parliament-chart.zip -- LICENSE README.md build/d3-parliament-chart.js build/d3-parliament-chart.min.js"
   },
   "repository": {
     "type": "git",
@@ -15,6 +25,7 @@
   "license": "MIT",
   "keywords": [
     "d3",
+    "d3-module",
     "parliament",
     "legislature",
     "congress",
@@ -23,5 +34,24 @@
   "bugs": {
     "url": "https://github.com/dkaoster/d3-parliament-chart/issues"
   },
-  "homepage": "https://github.com/dkaoster/d3-parliament-chart#readme"
+  "homepage": "https://github.com/dkaoster/d3-parliament-chart#readme",
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-node-resolve": "^11.0.1",
+    "babel-jest": "^26.6.3",
+    "d3": "^6.3.1",
+    "eslint": "^7.16.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-svelte3": "^3.0.0",
+    "jest": "^26.6.3",
+    "rollup": "^2.36.1",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-svelte": "^7.0.0",
+    "sirv-cli": "^1.0.10",
+    "svelte": "^3.31.2"
+  }
 }
