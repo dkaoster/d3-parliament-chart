@@ -1,6 +1,6 @@
 {
   "name": "d3-parliament-chart",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "parliament / congress / legislature charts simplified",
   "main": "build/d3-parliament-chart.js",
   "files": [
