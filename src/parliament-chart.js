@@ -34,8 +34,10 @@ export default (data = [], width = 0) => {
   // This function gets called on instances such as:
   //    d3.select('g').call(parliamentChart())
   const parliamentChart = (selection) => {
-    // Sets the graphicWidth based on our selected container
-    graphicWidth = selection.node().getBoundingClientRect().width;
+    if (graphicWidth === 0) {
+      // Sets the graphicWidth based on our selected container
+      graphicWidth = selection.node().getBoundingClientRect().width;
+    }
 
     // Get the processed data (filter for entries that have x and y locations)
     const processedData = parliamentChart.data().filter((r) => r.x && r.y);
