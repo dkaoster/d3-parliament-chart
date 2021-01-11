@@ -35,8 +35,9 @@ export default [
     input: './index.js',
     output: {
       sourcemap: true,
-      format: 'es',
-      file: 'build/d3-parliament-chart.es.js',
+      format: 'umd',
+      name: 'd3',
+      file: 'build/d3-parliament-chart.js',
     },
   },
   {

@@ -19,10 +19,10 @@ export default (data = [], width = 0) => {
 
   // visual options
   const options = {
-    sections: 4,        // Number of sections to divide the half circle into
-    sectionGap: 10,     // The gap of the aisle between sections
-    seatRadius: 3,      // The radius of each seat
-    rowHeight: 12,      // The height of each row
+    sections: 4,         // Number of sections to divide the half circle into
+    sectionGap: 60,      // The gap of the aisle between sections
+    seatRadius: 12,      // The radius of each seat
+    rowHeight: 42,       // The height of each row
   };
 
   // Whether we should draw the debug lines or not
@@ -37,32 +37,32 @@ export default (data = [], width = 0) => {
     // Sets the graphicWidth based on our selected container
     graphicWidth = selection.node().getBoundingClientRect().width;
 
-    // Get the processed data
-    const processedData = parliamentChart.data();
+    // Get the processed data (filter for entries that have x and y locations)
+    const processedData = parliamentChart.data().filter((r) => r.x && r.y);
+
+    // Remove existing chart
+    selection.select('g.parliament-chart').remove();
+
+    // Add new chart
+    const innerSelection = selection
+      .append('g')
+      .attr('class', 'parliament-chart');
+
+    // First remove any existing debug lines
+    innerSelection.select('g.debug').remove();
 
     // Append debug lines
-    if (debug) debugGuides(selection, graphicWidth, options);
+    if (debug) debugGuides(innerSelection, graphicWidth, options, processedData.length);
 
-    const circles = selection
-      .append('g')
-      .attr('class', 'parliament-chart')
+    return innerSelection
       .selectAll('circle')
-      .data(processedData);
-
-    // Edit
-    circles.attr('cx', (d) => d.x)
-      .attr('cy', (d) => d.y)
-      .attr('r', options.seatRadius);
-
-    // Exit
-    circles.exit().remove();
-
-    // Add the circles
-    return circles.enter()
+      .data(processedData)
+      .enter()
       .insert('circle')
       .attr('cx', (d) => d.x)
       .attr('cy', (d) => d.y)
-      .attr('r', options.seatRadius);
+      .attr('r', options.seatRadius)
+      .attr('fill', (d) => d.color || '#AAA');
   };
 
   // //////////////////////////////////////////////////////////////////////////
@@ -79,10 +79,11 @@ export default (data = [], width = 0) => {
   };
 
   // Create getters and setters for sections, sectionGap, seatRadius, and rowHeight
-  ['sections', 'sectionGap', 'seatRadius', 'rowHeight']
+  Object.keys(options)
     .forEach((attr) => {
       parliamentChart[attr] = (s) => {
-        if (s) {
+        // eslint-disable-next-line no-restricted-globals
+        if (!isNaN(s)) {
           options[attr] = parseInt(s, 10);
           return parliamentChart;
         }
@@ -126,6 +127,18 @@ export default (data = [], width = 0) => {
 
     // return the data
     return rawData;
+  };
+
+  // Instead of passing in an array of every single point, we pass in an array of objects
+  // that each have a key `seats` that specifies the number of seats. This function can only
+  // set, not get.
+  parliamentChart.aggregatedData = (d) => {
+    rawData = d.reduce((acc, val) => {
+      const { seats = 0, x, y, ...restProps } = val;
+      return [...acc, ...Array(seats).fill(restProps)];
+    }, []);
+
+    return parliamentChart;
   };
 
   return parliamentChart;

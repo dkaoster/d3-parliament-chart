@@ -2,8 +2,7 @@
   "name": "d3-parliament-chart",
   "version": "0.0.0",
   "description": "parliament / congress / legislature charts simplified",
-  "main": "build/d3-parliament-chart.cjs.js",
-  "jsnext:main": "build/d3-parliament-chart.es.js",
+  "main": "build/d3-parliament-chart.js",
   "files": [
     "build",
     "README.md"
@@ -13,10 +12,10 @@
     "clean": "rimraf build",
     "lint": "eslint .",
     "test": "jest",
-    "build": "npm run clean && npm run build:cjs && npm run build:es",
-    "build:cjs": "rollup -c -o build/d3-parliament-chart.cjs.js -f cjs",
-    "build:es": "rollup -c -o build/d3-parliament-chart.es.js -f es",
-    "prepublishOnly": "npm run build && uglifyjs build/d3-foo.js -c -m -o build/d3-foo.min.js"
+    "build": "npm run clean && npm run build:umd",
+    "build:umd": "rollup -c -o build/d3-parliament-chart.js -f umd -n d3",
+    "prepublishOnly": "npm run build && uglifyjs build/d3-parliament-chart.js -c -m -o build/d3-parliament-chart.min.js",
+    "postpublish": "zip -j build/d3-parliament-chart.zip -- LICENSE README.md build/d3-parliament-chart.js build/d3-parliament-chart.min.js"
   },
   "repository": {
     "type": "git",
@@ -46,6 +45,7 @@
     "eslint": "^7.16.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-svelte3": "^3.0.0",
     "jest": "^26.6.3",
     "rollup": "^2.36.1",
     "rollup-plugin-css-only": "^3.1.0",
