@@ -136,5 +136,8 @@ export default (totalPoints, { sections, sectionGap, seatRadius, rowHeight }, gr
     // sort by angle
     .sort((a, b) => b.angle - a.angle)
     // remove angle from returned dataset
-    .map(({ angle, ...rest }) => rest);
+    .map((r) => {
+      const { angle, ...rest } = r;
+      return rest;
+    });
 };
