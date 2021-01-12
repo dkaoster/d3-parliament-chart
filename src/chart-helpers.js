@@ -67,7 +67,9 @@ const generatePartial = ({
         // flip the y coordinates
         y: graphicHeight - (Math.sin(currentAngle)
           * (graphRadius - (rowHeight * currentRow))
-          + seatRadius) + seatRadius,
+          + seatRadius)
+          // Add seatRadius and any sectionGap / 4 so that we vertically center
+          + seatRadius + (sectionGap / 4),
         angle: currentAngle,
       }]);
     }

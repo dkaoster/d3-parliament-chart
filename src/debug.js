@@ -7,7 +7,9 @@ export default (selection, graphicWidth, options, totalSeats) => {
   const sections = Math.min(totalSeats, options.sections);
 
   // Create a container for our debug lines
-  const g = selection.append('g').attr('class', 'debug');
+  const g = selection.append('g')
+    .attr('class', 'debug')
+    .attr('transform', `translate(0, ${options.sectionGap / 4})`);
 
   // The radius of the semicircle
   const radius = graphicWidth / 2;
