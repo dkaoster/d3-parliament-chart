@@ -12,8 +12,7 @@
     "clean": "rimraf build",
     "lint": "eslint .",
     "test": "jest",
-    "build": "npm run clean && npm run build:umd",
-    "build:umd": "rollup -c -o build/d3-parliament-chart.js -f umd -n d3",
+    "build": "npm run clean && rollup -c",
     "prepublishOnly": "npm run build && uglifyjs build/d3-parliament-chart.js -c -m -o build/d3-parliament-chart.min.js",
     "postpublish": "zip -j build/d3-parliament-chart.zip -- LICENSE README.md build/d3-parliament-chart.js build/d3-parliament-chart.min.js"
   },
@@ -42,7 +41,7 @@
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.1",
     "babel-jest": "^26.6.3",
-    "d3": "^6.3.1",
+    "d3": "^7.4.4",
     "eslint": "^7.16.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
@@ -54,6 +53,6 @@
     "rollup-plugin-svelte": "^7.0.0",
     "sirv-cli": "^1.0.10",
     "svelte": "^3.31.2",
-    "uglify-js": "^3.12.4"
+    "uglify-js": "^3.15.4"
   }
 }
