@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <script src="https://unpkg.com/d3-parliament-chart@0.0.6/build/d3-parliament-chart.min.js"></script>
+</head>
+<body>
+<svg id="pchart" width="100%" viewBox="0 0 800 400"></svg>
+
+<script>
+  d3.select('svg#pchart')
+    .append('g')
+    .call(
+      d3.parliamentChart()
+        .width(800)
+        .aggregatedData([
+          {"seats":40,"color":"#636cbb"},
+          {"seats":30,"color":"#26d050"},
+          {"seats":50,"color":"#315cee"}
+        ])
+    );
+</script>
+
+</body>
+</html>
