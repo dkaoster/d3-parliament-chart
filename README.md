@@ -59,16 +59,20 @@ Sets the height of each row for this parliament chart.
 
 <a href="#seatIcon" name="seatIcon">#</a> <i>pc</i>.<b>seatIcon</b>(icon)
 
-Optionally renders each seat as an SVG path icon instead of a circle, scaled to match the seat diameter.
+Optionally renders each seat as an SVG icon instead of a circle.  
+Icons are automatically scaled to match the seat diameter.
 
 `icon` can be:
 
 1. A string containing an SVG `path` `d` value.
-2. A function `(datum, helpers) => string` that returns a path for each seat.
+2. A function `(datum, helpers)` that renders the icon using D3 inside the seat element.
 
 If `null` is passed, icon rendering is disabled.
 
-When `icon` is a function, `helpers` includes:
+When `icon` is a function, it is called for each seat.  
+Inside the function, `this` refers to the seat's SVG group element.
+
+`helpers` includes:
 
 1. `index`
 2. `seatRadius`
@@ -133,9 +137,17 @@ Use function-based icon + function-based view box:
 ```js
 pc.parliamentChart()
   .aggregatedData(data)
-  .seatIcon((datum, helpers) => {
-    if (datum.party === 'independent') return 'M10 2L2 20h16z';
-    return 'M12 2L2 7v10l10 5 10-5V7z';
+  .seatIcon(function(datum, helpers) {
+    const g = d3.select(this);
+
+    const path =
+      datum.party === 'independent'
+        ? 'M10 2L2 20h16z'
+        : 'M12 2L2 7v10l10 5 10-5V7z';
+
+    g.append('path')
+      .attr('d', path)
+      .attr('fill', 'currentColor');
   })
   .seatIconViewBox((datum) => (datum.party === 'independent'
     ? { width: 20, height: 20 }

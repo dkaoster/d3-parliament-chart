@@ -1,4 +1,7 @@
-import getParliamentPoints from './chart-helpers';
+import getParliamentPoints, {
+  normalizeSeatIconViewBox,
+  resolveSeatIconViewBox,
+} from './chart-helpers';
 import debugGuides from './debug';
 
 /**
@@ -29,47 +32,11 @@ export default (data = [], width = 0) => {
   let debug = false;
 
   // Optional icon renderer for seats.
-  // Accepts a string path (legacy) or a function(datum, helpers).
+  // Accepts a string SVG path or a function(datum, helpers)
   let seatIcon = null;
 
   // Expected icon coordinate size. Most icon paths use 24x24 view boxes.
   let seatIconViewBox = { width: 24, height: 24 };
-
-  // Normalize icon viewBox value to a usable object.
-  const normalizeSeatIconViewBox = (viewBox, fallback = { width: 24, height: 24 }) => {
-    if (typeof viewBox === 'number' && viewBox > 0) {
-      return { width: viewBox, height: viewBox };
-    }
-
-    if (
-      viewBox
-      && typeof viewBox === 'object'
-      && typeof viewBox.width === 'number'
-      && typeof viewBox.height === 'number'
-      && viewBox.width > 0
-      && viewBox.height > 0
-    ) {
-      return { width: viewBox.width, height: viewBox.height };
-    }
-
-    return fallback;
-  };
-
-  const resolveSeatIconViewBox = (d, i) => {
-    const fallback = { width: 24, height: 24 };
-
-    if (typeof seatIconViewBox === 'function') {
-      const maybeViewBox = seatIconViewBox(d, {
-        index: i,
-        seatRadius: options.seatRadius,
-        seatDiameter: options.seatRadius * 2,
-        color: d.color || '#AAA',
-      });
-      return normalizeSeatIconViewBox(maybeViewBox, fallback);
-    }
-
-    return normalizeSeatIconViewBox(seatIconViewBox, fallback);
-  };
 
   // //////////////////////////////////////////////////////////////////////////
   // Selection call
@@ -125,7 +92,7 @@ export default (data = [], width = 0) => {
       .append('g')
       .attr('class', 'seat-element')
       .attr('transform', (d, i) => {
-        const viewBox = resolveSeatIconViewBox(d, i);
+        const viewBox = resolveSeatIconViewBox(seatIconViewBox, options, d, i);
         const iconScale = (options.seatRadius * 2) / Math.max(viewBox.width, viewBox.height);
         const iconTranslateX = -(viewBox.width / 2);
         const iconTranslateY = -(viewBox.height / 2);
@@ -133,22 +100,16 @@ export default (data = [], width = 0) => {
       });
 
     if (typeof seatIcon === 'function') {
-      elements.each(function seatIconEach(d, i) {
-        const maybePath = seatIcon(d, {
+      elements.each(function (d, i) {
+        seatIcon.call(this, d, {
           index: i,
           seatRadius: options.seatRadius,
           seatDiameter: options.seatRadius * 2,
           color: d.color || '#AAA',
-          viewBox: resolveSeatIconViewBox(d, i),
+          viewBox: resolveSeatIconViewBox(seatIconViewBox, options, d, i),
         });
-
-        // Backward-compatible function support: returning a string draws an SVG path.
-        if (typeof maybePath === 'string') {
-          this.innerHTML = `<path d="${maybePath}" fill="currentColor"></path>`;
-        }
       });
-    } else {
-      // Backward-compatible string support: seatIcon string is treated as SVG path `d`.
+    } else if (typeof seatIcon === 'string') {
       elements
         .append('path')
         .attr('d', seatIcon)
@@ -191,7 +152,7 @@ export default (data = [], width = 0) => {
   };
 
   // Set or get seat icon renderer.
-  // Accepts string path (legacy) or function(datum, helpers).
+  // Accepts a string SVG path or a function(datum, helpers)
   parliamentChart.seatIcon = (icon) => {
     if (typeof icon === 'string' || typeof icon === 'function' || icon === null) {
       seatIcon = icon;

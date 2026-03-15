@@ -16,7 +16,7 @@ describe('seatIcon getter/setter', () => {
 
   test('should set and get function icon', () => {
     const chart = parliamentChart();
-    const iconFunc = () => 'M12 2L2 7v10l10 5 10-5V7z';
+    const iconFunc = function () {};
     chart.seatIcon(iconFunc);
     expect(chart.seatIcon()).toBe(iconFunc);
   });
@@ -119,7 +119,7 @@ describe('icon data processing', () => {
   });
 
   test('data should be processed correctly with icon function', () => {
-    const iconFunc = () => 'M12 2L2 7v10l10 5 10-5V7z';
+    const iconFunc = function () {};
     const chart = parliamentChart([{}, {}, {}, {}], 800)
       .seatIcon(iconFunc);
 
@@ -193,7 +193,7 @@ describe('icon method chaining', () => {
   });
 
   test('should allow setting icon after data', () => {
-    const iconFunc = () => 'M12 2L2 7v10l10 5 10-5V7z';
+    const iconFunc = function () {};
     const chart = parliamentChart([{}, {}, {}], 800);
     chart.seatIcon(iconFunc);
 
@@ -208,7 +208,7 @@ describe('icon method chaining', () => {
     chart.seatIcon(iconPath1);
     expect(chart.seatIcon()).toBe(iconPath1);
 
-    const iconFunc = () => 'M10 10L20 20';
+    const iconFunc = function () {};
     chart.seatIcon(iconFunc);
     expect(chart.seatIcon()).toBe(iconFunc);
 
