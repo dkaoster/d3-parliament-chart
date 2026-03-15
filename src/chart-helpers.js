@@ -10,6 +10,41 @@
  * @param sectionGap - The gap between sections
  * @returns {[]}
  */
+export const normalizeSeatIconViewBox = (viewBox, fallback = { width: 24, height: 24 }) => {
+  if (typeof viewBox === 'number' && viewBox > 0) {
+    return { width: viewBox, height: viewBox };
+  }
+
+  if (
+    viewBox
+    && typeof viewBox === 'object'
+    && typeof viewBox.width === 'number'
+    && typeof viewBox.height === 'number'
+    && viewBox.width > 0
+    && viewBox.height > 0
+  ) {
+    return { width: viewBox.width, height: viewBox.height };
+  }
+
+  return fallback;
+};
+
+export const resolveSeatIconViewBox = (seatIconViewBox, options, d, i) => {
+  const fallback = { width: 24, height: 24 };
+
+  if (typeof seatIconViewBox === 'function') {
+    const maybeViewBox = seatIconViewBox(d, {
+      index: i,
+      seatRadius: options.seatRadius,
+      seatDiameter: options.seatRadius * 2,
+      color: d.color || '#AAA',
+    });
+    return normalizeSeatIconViewBox(maybeViewBox, fallback);
+  }
+
+  return normalizeSeatIconViewBox(seatIconViewBox, fallback);
+};
+
 const generatePartial = ({
   seats, startRad, endRad, seatRadius, rowHeight, graphicHeight, sectionGap,
 }) => {

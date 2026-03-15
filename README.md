@@ -57,6 +57,103 @@ Sets the radius of each seat in this parliament chart.
 
 Sets the height of each row for this parliament chart.
 
+<a href="#seatIcon" name="seatIcon">#</a> <i>pc</i>.<b>seatIcon</b>(icon)
+
+Optionally renders each seat as an SVG icon instead of a circle.  
+Icons are automatically scaled to match the seat diameter.
+
+`icon` can be:
+
+1. A string containing an SVG `path` `d` value.
+2. A function `(datum, helpers)` that renders the icon using D3 inside the seat element.
+
+If `null` is passed, icon rendering is disabled.
+
+When `icon` is a function, it is called for each seat.  
+Inside the function, `this` refers to the seat's SVG group element.
+
+`helpers` includes:
+
+1. `index`
+2. `seatRadius`
+3. `seatDiameter`
+4. `color`
+5. `viewBox` (resolved value from `seatIconViewBox`)
+
+```js
+const personIconPath = 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z';
+
+d3.parliamentChart(data, 800)
+  .seatIcon(personIconPath)
+  .seatIconViewBox(24);
+```
+
+<a href="#seatIconViewBox" name="seatIconViewBox">#</a> <i>pc</i>.<b>seatIconViewBox</b>(viewBox)
+
+Sets the icon coordinate system used for scaling and centering. Default is `{ width: 24, height: 24 }`.
+
+`seatIconViewBox` can be:
+
+1. A number (square view box): `24` -> `{ width: 24, height: 24 }`
+2. An object: `{ width, height }`
+3. A function `(datum, helpers) => number | { width, height }`
+
+When `seatIconViewBox` is a function, `helpers` includes:
+
+1. `index`
+2. `seatRadius`
+3. `seatDiameter`
+4. `color`
+
+### Icon Examples
+
+Use a plain SVG path + numeric view box:
+
+```js
+const seatPersonIcon = 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z';
+
+pc.parliamentChart()
+  .aggregatedData(data)
+  .seatIcon(seatPersonIcon)
+  .seatIconViewBox(24);
+```
+
+Use a font library (Font Awesome):
+
+```js
+import { faUser } from '@fortawesome/free-solid-svg-icons';
+
+pc.parliamentChart()
+  .aggregatedData(data)
+  .sections(sections).sectionGap(sectionGap)
+  .seatRadius(seatRadius)
+  .rowHeight(rowHeight)
+  .seatIcon(faUser.icon[4])
+  .seatIconViewBox({ width: faUser.icon[1], height: faUser.icon[0] });
+```
+
+Use function-based icon + function-based view box:
+
+```js
+pc.parliamentChart()
+  .aggregatedData(data)
+  .seatIcon(function(datum, helpers) {
+    const g = d3.select(this);
+
+    const path =
+      datum.party === 'independent'
+        ? 'M10 2L2 20h16z'
+        : 'M12 2L2 7v10l10 5 10-5V7z';
+
+    g.append('path')
+      .attr('d', path)
+      .attr('fill', 'currentColor');
+  })
+  .seatIconViewBox((datum) => (datum.party === 'independent'
+    ? { width: 20, height: 20 }
+    : 24));
+```
+
 <a href="#debug" name="debug">#</a> <i>pc</i>.<b>debug</b>(debug)
 
 Takes a boolean that if true, draws a set of guidelines for what this chart is supposed to look like.

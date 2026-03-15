@@ -1,4 +1,7 @@
-import getParliamentPoints from './chart-helpers';
+import getParliamentPoints, {
+  normalizeSeatIconViewBox,
+  resolveSeatIconViewBox,
+} from './chart-helpers';
 import debugGuides from './debug';
 
 /**
@@ -28,6 +31,13 @@ export default (data = [], width = 0) => {
   // Whether we should draw the debug lines or not
   let debug = false;
 
+  // Optional icon renderer for seats.
+  // Accepts a string SVG path or a function(datum, helpers)
+  let seatIcon = null;
+
+  // Expected icon coordinate size. Most icon paths use 24x24 view boxes.
+  let seatIconViewBox = { width: 24, height: 24 };
+
   // //////////////////////////////////////////////////////////////////////////
   // Selection call
   //
@@ -56,15 +66,57 @@ export default (data = [], width = 0) => {
     // Append debug lines
     if (debug) debugGuides(innerSelection, graphicWidth, options, processedData.length);
 
-    return innerSelection
-      .selectAll('circle')
+    if (!seatIcon) {
+      return innerSelection
+        .selectAll('circle')
+        .data(processedData)
+        .enter()
+        .insert('circle')
+        .attr('cx', (d) => d.x)
+        .attr('cy', (d) => d.y)
+        .attr('r', options.seatRadius)
+        .attr('fill', (d) => d.color || '#AAA');
+    }
+
+    const seats = innerSelection
+      .selectAll('g.seat')
       .data(processedData)
       .enter()
-      .insert('circle')
-      .attr('cx', (d) => d.x)
-      .attr('cy', (d) => d.y)
-      .attr('r', options.seatRadius)
-      .attr('fill', (d) => d.color || '#AAA');
+      .append('g')
+      .attr('class', 'seat')
+      .attr('transform', (d) => `translate(${d.x},${d.y})`)
+      .attr('fill', (d) => d.color || '#AAA')
+      .attr('color', (d) => d.color || '#AAA');
+
+    const elements = seats
+      .append('g')
+      .attr('class', 'seat-element')
+      .attr('transform', (d, i) => {
+        const viewBox = resolveSeatIconViewBox(seatIconViewBox, options, d, i);
+        const iconScale = (options.seatRadius * 2) / Math.max(viewBox.width, viewBox.height);
+        const iconTranslateX = -(viewBox.width / 2);
+        const iconTranslateY = -(viewBox.height / 2);
+        return `scale(${iconScale}) translate(${iconTranslateX},${iconTranslateY})`;
+      });
+
+    if (typeof seatIcon === 'function') {
+      elements.each(function (d, i) {
+        seatIcon.call(this, d, {
+          index: i,
+          seatRadius: options.seatRadius,
+          seatDiameter: options.seatRadius * 2,
+          color: d.color || '#AAA',
+          viewBox: resolveSeatIconViewBox(seatIconViewBox, options, d, i),
+        });
+      });
+    } else if (typeof seatIcon === 'string') {
+      elements
+        .append('path')
+        .attr('d', seatIcon)
+        .attr('fill', 'currentColor');
+    }
+
+    return seats;
   };
 
   // //////////////////////////////////////////////////////////////////////////
@@ -97,6 +149,40 @@ export default (data = [], width = 0) => {
   parliamentChart.debug = (b) => {
     debug = !!b;
     return parliamentChart;
+  };
+
+  // Set or get seat icon renderer.
+  // Accepts a string SVG path or a function(datum, helpers)
+  parliamentChart.seatIcon = (icon) => {
+    if (typeof icon === 'string' || typeof icon === 'function' || icon === null) {
+      seatIcon = icon;
+      return parliamentChart;
+    }
+    return seatIcon;
+  };
+
+  // Set or get icon coordinate size. Use 24 for most material-style icons.
+  // Accepts number, {width, height}, or function(datum, helpers).
+  parliamentChart.seatIconViewBox = (viewBox) => {
+    if (typeof viewBox === 'number') {
+      seatIconViewBox = { width: viewBox, height: viewBox };
+      return parliamentChart;
+    }
+
+    if (typeof viewBox === 'function') {
+      seatIconViewBox = viewBox;
+      return parliamentChart;
+    }
+
+    if (normalizeSeatIconViewBox(viewBox, null)) {
+      seatIconViewBox = {
+        width: viewBox.width,
+        height: viewBox.height,
+      };
+      return parliamentChart;
+    }
+
+    return seatIconViewBox;
   };
 
   // //////////////////////////////////////////////////////////////////////////

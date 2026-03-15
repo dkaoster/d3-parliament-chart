@@ -17,8 +17,12 @@
   let sectionGap = 60;
   let debug = false;
   let showColors = true;
+  let useIcon = false;
+  let iconViewBoxHeight = 24;
+  let iconViewBoxWidth = 24;
 
   const colors = ['#3498db', '#DDD', '#e74c3c'];
+  let seatPersonIcon = 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z';
 
   // Update the data object
   $: data = showColors
@@ -46,6 +50,8 @@
             .sections(sections).sectionGap(sectionGap)
             .seatRadius(seatRadius)
             .rowHeight(rowHeight)
+            .seatIcon(useIcon ? seatPersonIcon : null)
+            .seatIconViewBox({ width: iconViewBoxWidth, height: iconViewBoxHeight })
             .debug(debug),
         );
     }
@@ -86,6 +92,7 @@
 
   .control-pane { padding: 20px 0; }
   input[type="range"] { width: 100%; margin: -0.6em 0 0; }
+  input[type="text"] { width: 100%; margin: 0 0; }
   label { font-size: 12px; text-transform: uppercase; color: #888; }
 
   @media screen and (max-width: 768px) {
@@ -120,6 +127,15 @@
 
       <label for="sectionGap">section gap ({sectionGap})</label>
       <input type="range" min="0" max="200" bind:value={sectionGap} class="slider" id="sectionGap">
+
+      <label for="iconPath">seat icon path</label>
+      <input type="text" bind:value={seatPersonIcon} class="text" id="iconPath">
+
+      <label for="iconViewBoxWidth">icon view box width ({iconViewBoxWidth})</label>
+      <input type="range" min="1" max="1000" bind:value={iconViewBoxWidth} class="slider" id="iconViewBoxWidth">
+
+      <label for="iconViewBoxHeight">icon view box height ({iconViewBoxHeight})</label>
+      <input type="range" min="1" max="1000" bind:value={iconViewBoxHeight} class="slider" id="iconViewBoxHeight">
     </div>
 
     <div class="control-pane">
@@ -128,6 +144,9 @@
       <br>
       <input id="showColors" type="checkbox" bind:checked={showColors}>
       <label for="showColors">random colors</label>
+      <br>
+      <input id="useIcon" type="checkbox" bind:checked={useIcon}>
+      <label for="useIcon">use icon</label>
     </div>
   </div>
 </div>
